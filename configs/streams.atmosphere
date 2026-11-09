@@ -1,0 +1,35 @@
+<streams>
+<immutable_stream name="input" type="input" filename_template="/opt/mpas/outputs/init.nc" input_interval="initial_only" />
+<immutable_stream name="restart" type="input;output" filename_template="/opt/mpas/outputs/restart.$Y-$M-$D_$h.$m.$s.nc" input_interval="initial_only" output_interval="48:00:00" clobber_mode="overwrite" />
+<stream name="output" type="output" filename_template="/opt/mpas/outputs/history.$Y-$M-$D_$h.$m.$s.nc" output_interval="3:00:00" io_type="pnetcdf,cdf5" clobber_mode="overwrite">
+    <var name="uReconstructMeridional" />
+    <var name="uReconstructZonal" />
+    <var name="theta" />
+    <var name="rho" />
+    <var name="pressure_p" />
+    <var name="temperature" />
+    <var name="relhum" />
+    <var name="qv" />
+    <var name="qc" />
+    <var name="qr" />
+    <var name="precipw" />
+    <var name="surface_pressure" />
+</stream>
+<stream name="surface" type="output" filename_template="/opt/mpas/outputs/diag.$Y-$M-$D_$h.$m.$s.nc" output_interval="1:00:00" io_type="pnetcdf,cdf5" clobber_mode="overwrite">
+    <var name="skintemp" />
+    <var name="t2m" />
+    <var name="q2" />
+    <var name="u10" />
+    <var name="v10" />
+    <var name="prec_acc_c" />
+    <var name="prec_acc_nc" />
+    <var name="rainc" />
+    <var name="rainnc" />
+    <var name="acsnow" />
+    <var name="acsnom" />
+    <var name="olrtoa" />
+    <var name="cldfrac" />
+</stream>
+<stream name="lbc_output" type="output" filename_template="/opt/mpas/outputs/lbc.$Y-$M-$D_$h.$m.$s.nc" output_interval="initial_only" io_type="pnetcdf,cdf5" clobber_mode="overwrite">
+</stream>
+</streams>

@@ -1,0 +1,6 @@
+<streams>
+<!-- streams.init_atmosphere mínimo válido MPAS 8.4.2 (ideal case 1 + real case 7) -->
+<!-- input/output são immutable no Registry; io_type vai como atributo, não <file> -->
+<immutable_stream name="input" type="input" filename_template="/opt/mpas/inputs/x1.10242.grid.nc" input_interval="initial_only" />
+<immutable_stream name="output" type="output" filename_template="/opt/mpas/outputs/init.nc" output_interval="initial_only" clobber_mode="overwrite" />
+</streams>

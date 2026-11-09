@@ -1,0 +1,69 @@
+# docker-compose.yml — MPAS-Atmosphere 8.4.2 + NVIDIA Tesla P100
+# Uso:
+#   cd ~/mpas
+#   docker compose build          # primeira vez (~30-90 min)
+#   docker compose up -d          # sobe container "mpas" (sleep infinity)
+#   docker compose exec mpas bash # entra no container
+#   ./scripts/run_mpas.sh         # dentro ou fora via exec
+#   docker compose down
+#
+# GPU: usa o padrão Compose v2.4+ (device_requests) + runtime nvidia legado.
+# Testado com: Docker 29.x + Compose v5.6 + driver 580.x + P100 16GB (esta máquina).
+
+name: mpas
+
+services:
+  mpas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mpas-atmosphere:8.4.2-p100
+    container_name: mpas-atmosphere
+    # Mantém o container vivo para exec interativo (init + atmosphere via mpiexec)
+    command: sleep infinity
+    stdin_open: true
+    tty: true
+    working_dir: /opt/mpas/run
+    environment:
+      # 1 MPI rank por GPU (esta máquina tem 1x P100)
+      - CUDA_VISIBLE_DEVICES=0
+      - NVIDIA_VISIBLE_DEVICES=0
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      # Desligado por padrão: P100 sola + OpenMPI sem CUDA-aware costuma ser mais estável
+      # Ligue (true) apenas se seu OpenMPI tiver suporte GPU-aware e só após validar.
+      - MPAS_GPU_AWARE_MPI=false
+      - OMP_NUM_THREADS=1
+    # Reserva de GPU (Compose spec). Equivale a --gpus all.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # Volumes pedidos: configs / inputs / outputs
+    volumes:
+      - ./configs:/opt/mpas/run/configs:ro
+      - ./inputs:/opt/mpas/inputs
+      - ./outputs:/opt/mpas/outputs
+      - ./scripts:/opt/mpas/run/scripts:ro
+    shm_size: 2gb
+    ulimits:
+      memlock: -1
+      stack: 67108864
+
+  # ---- Fallback CPU-only (imagem comunitária, sem build local) ----
+  # Se o build GPU falhar na P100 ou quiser comparar CPU x GPU:
+  #   docker compose --profile cpu up -d mpas-cpu
+  mpas-cpu:
+    image: gbnz/mpas_containerized:v8.2
+    container_name: mpas-cpu
+    profiles: ["cpu"]
+    command: sleep infinity
+    stdin_open: true
+    tty: true
+    working_dir: /workspaces/mpas_container/experiments
+    volumes:
+      - ./configs:/workspaces/mpas_container/experiments/configs:ro
+      - ./inputs:/workspaces/mpas_container/experiments/inputs
+      - ./outputs:/workspaces/mpas_container/experiments/outputs

@@ -1,0 +1,87 @@
+! namelist.atmosphere — GENÉRICO América Central + do Sul
+! Grade: global variável 60-15 km (x4.535554, 535.554 células) com refinamento
+!        rotacionado para o continente (~centro -15S, -60W).
+!        Cobre lat -60..+18, lon -105..-30 (toda América Central e do Sul).
+! Alternativa rápida p/ teste na P100 16GB: malha 120 km (x1.40962) ou 240 km.
+! Edite config_start_time / config_run_duration / config_dt conforme a grade.
+! Física: suite 'mesoscale_reference' (>10 km). GPU acelera SÓ a dinâmica na v8.4.x;
+!         física roda na CPU (comportamento oficial).
+! Ref: MPAS-Atmosphere User's Guide v8 + cap. 8.5 (GPU: OPENACC=true, nvhpc).
+
+&nhyd_model
+    config_time_integration = 'SRK3'
+    config_dt = 90.0
+    config_len_disp = 15000.0
+    config_calendar_type = 'gregorian'
+    config_start_time = '2026-01-01_00:00:00'
+    ! Duração genérica: 72 h. Para smoke-test na P100 use 06:00:00.
+    config_run_duration = '72:00:00'
+    config_split_dynamics_transport = .true.
+    config_number_of_sub_steps = 2
+    config_dynamics_split_steps = 3
+    config_h_mom_eddy_visc2 = 0.0
+    config_h_mom_eddy_visc4 = 0.0
+    config_v_mom_eddy_visc2 = 0.0
+    config_h_theta_eddy_visc2 = 0.0
+    config_h_theta_eddy_visc4 = 0.0
+    config_v_theta_eddy_visc2 = 0.0
+    config_horiz_mixing = '2d_smagorinsky'
+    config_visc4_2dsmag = 0.05
+    config_del4u_div_factor = 10.0
+    config_apvm_upwinding = 0.5
+    config_theta_adv_order = 3
+    config_coef_3rd_order = 0.25
+    config_smagorinsky_coef = 0.15
+    config_mix_full = .true.
+    config_epssm = 0.1
+    config_smdiv = 0.1
+    config_scalar_adv_order = 3
+    config_positive_definite = .false.
+    config_monotonic = .false.
+/
+&damping
+    config_zd = 22000.0
+    config_xnutr = 0.2
+    config_rayleigh_damp_u = .true.
+/
+
+&limited_area
+    config_apply_lbcs = .false.
+/
+
+&decomposition
+    config_block_decomp_file_prefix = 'x4.535554.graph.info.part.'
+    config_number_of_blocks = 0
+    config_explicit_proc_decomp = .false.
+/
+
+&io
+    config_pio_num_iotasks = 0
+    config_pio_stride = 1
+/
+
+&restart
+    config_do_restart = .false.
+/
+
+&printout
+    config_print_global_minmax_vel = .true.
+    config_print_detailed_minmax_vel = .false.
+    config_print_global_minmax_sca = .false.
+/
+
+&physics
+    ! Suite padrão testada p/ >10 km. Troque p/ 'convection_permitting' se usar 3-4 km.
+    config_physics_suite = 'mesoscale_reference'
+    config_microp_scheme = 'mp_wsm6'
+    config_convection_scheme = 'cu_grell_freitas'
+    config_lsm_scheme = 'sf_noahmp'
+    config_pbl_scheme = 'bl_mynn'
+    config_gwdo_scheme = 'bl_ysu_gwdo'
+    config_radt_sw_scheme = 'rrtmg_sw'
+    config_radt_lw_scheme = 'rrtmg_lw'
+    config_radtsw_interval = '0:30:00'
+    config_radtlw_interval = '0:30:00'
+    config_sfclayer_scheme = 'sf_mynn'
+    config_radt_cld_scheme = 'cld_fraction'
+/
